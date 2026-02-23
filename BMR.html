@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Cek BMR - BMR Calculator</title>
+</head>
+<body>
+    <header>
+        <a href="#" class="logo"> BMR </a>
+        <nav>
+            <a href="index.html"> Home</a>
+            <a href="BMR.html" class="active">Cek BMR </a>
+            <a href="hasil.html">Hasil</a>
+        </nav>
+    </header>
+
+    <section>
+        <div class="form-container">
+            <h3>Cek BMR Kelas SI C</h3>
+            <p class="form-description">Isi formulir berikut untuk menghitung BMR</p>
+
+            <form id="bmrForm">
+                <div class="form-group">
+                    <label for="nim">NIM :</label>
+                    <input type="text" id="nim" name="nim" placeholder="Masukkan NIM" required>
+                </div>
+                <div class="form-group">
+                    <label for="tinggi">Tinggi Badan (cm) :</label>
+                    <input type="number" id="tinggi" name="tinggi" placeholder="Contoh: 170" required>
+                </div>
+                <div class="form-group">
+                    <label for="berat">Berat Badan (kg) :</label>
+                    <input type="number" id="berat" name="berat" placeholder="Contoh: 65" required>
+                </div>
+                <button type="submit">Hitung BMR</button>
+            </form>
+
+            <div id="message"></div>
+        </div>
+    </section>
+
+    <section>
+        <div class="results-container">
+            <h3>Riwayat Perhitungan SI C</h3>
+            <p class="form-description">Daftar hasil perhitungan BMR terbaru</p>
+            <div id="resultsGrid" class="results-grid"></div>
+        </div>
+    </section>
+
+    <script>
+        // Data mahasiswa
+        const mahasiswa = {
+            "531424048": {"nama":"Muh Mishbahuddin Dalu","jk":"L","umur":20},
+            "531424049": {"nama":"Nailah Ambarwati","jk":"P","umur":20},
+            "531424050": {"nama":"Mohamad Satrio Latare","jk":"L","umur":20},
+            "531424051": {"nama":"Desy Arya Puspitasari Modjo","jk":"P","umur":20},
+            "531424052": {"nama":"Naufal Mufid Dama","jk":"L","umur":20},
+            "531424053": {"nama":"Moh. Rifky Nento","jk":"L","umur":20},
+            "531424054": {"nama":"Zalfa Fadliyah Latjompo","jk":"P","umur":20},
+            "531424055": {"nama":"Muh. Zidan Katili","jk":"L","umur":20},
+            "531424056": {"nama":"Azlan Tiangkano Saputra","jk":"L","umur":20},
+            "531424057": {"nama":"Adinda Marta Elviolita Kasim","jk":"P","umur":20},
+            "531424058": {"nama":"Muhammad Fachrurrazy Hamimu","jk":"L","umur":20},
+            "531424059": {"nama":"Akmal Rizkillah","jk":"L","umur":20},
+            "531424060": {"nama":"Ketut Riski Superdi","jk":"L","umur":20},
+            "531424061": {"nama":"Abim Molanu","jk":"L","umur":20},
+            "531424063": {"nama":"Moh. Zulkarnain","jk":"L","umur":20},
+            "531424064": {"nama":"Mutmainah","jk":"P","umur":20},
+            "531424065": {"nama":"Moh. Ilham Saputra I. Harun","jk":"L","umur":20},
+            "531424066": {"nama":"Nurna Ningsih Daud","jk":"P","umur":20},
+            "531424067": {"nama":"Moh. Nur Faiz Pulukadang","jk":"L","umur":20},
+            "531424068": {"nama":"Nabila Chelsea Putri Katili","jk":"P","umur":20},
+            "531424069": {"nama":"Nur Zein Ishak","jk":"p","umur":20},
+            "531424070": {"nama":"Muh. Fauzil","jk":"L","umur":20}
+        };
+
+        // Load hasil dari localStorage
+        let hasil = JSON.parse(localStorage.getItem('hasil')) || {};
+
+        // Fungsi hitung BMR
+        function hitungBMR(nim, tinggi, berat) {
+            if (!mahasiswa[nim]) {
+                return { error: "NIM tidak terdaftar di kelas C" };
+            }
+            const data = mahasiswa[nim];
+            const umur = data.umur;
+            const jk = data.jk;
+            let bmr;
+            if (jk === "L") {
+                bmr = (10 * berat) + (6.25 * tinggi) - (5 * umur) + 5;
+            } else {
+                bmr = (10 * berat) + (6.25 * tinggi) - (5 * umur) - 161;
+            }
+            return { nim, nama: data.nama, hasil: bmr, timestamp: Date.now() };
+        }
+
+        // Tampilkan pesan
+        function showMessage(msg, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class='message ${type}'>${msg}</div>`;
+            setTimeout(() => messageDiv.innerHTML = '', 5000);
+        }
+
+        // Render riwayat
+        function renderRiwayat() {
+            const grid = document.getElementById('resultsGrid');
+            const hasilArray = Object.values(hasil).sort((a, b) => b.timestamp - a.timestamp);
+            if (hasilArray.length === 0) {
+                grid.innerHTML = "<div class='message error'>Belum ada riwayat perhitungan. Silakan isi formulir di atas untuk menghitung BMR.</div>";
+                return;
+            }
+            grid.innerHTML = hasilArray.map(data => {
+                const bmr = data.hasil;
+                let kategori, warna;
+                if (bmr < 1400) {
+                    kategori = "Rendah";
+                    warna = "#ff6b6b";
+                } else if (bmr < 1700) {
+                    kategori = "Normal Bawah";
+                    warna = "#ffd93d";
+                } else if (bmr < 2200) {
+                    kategori = "Normal";
+                    warna = "#51cf66";
+                } else {
+                    kategori = "Tinggi";
+                    warna = "#b74b4b";
+                }
+                return `
+                    <div class='result-card'>
+                        <div class='result-header' style='border-left: 5px solid ${warna}'>
+                            <h4>${data.nama}</h4>
+                            <p class='nim-label'>${data.nim}</p>
+                        </div>
+                        <div class='result-body'>
+                            <div class='result-value-large'>${bmr.toFixed(2)}</div>
+                            <p class='result-unit'>Kalori/Hari</p>
+                            <p class='result-category' style='color: ${warna}'>${kategori}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Form submit
+        document.getElementById('bmrForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nim = document.getElementById('nim').value;
+            const tinggi = parseFloat(document.getElementById('tinggi').value);
+            const berat = parseFloat(document.getElementById('berat').value);
+            const result = hitungBMR(nim, tinggi, berat);
+            if (result.error) {
+                showMessage(result.error, 'error');
+            } else {
+                hasil[nim] = result;
+                localStorage.setItem('hasil', JSON.stringify(hasil));
+                showMessage(`Hasil BMR Anda: ${result.hasil.toFixed(2)} Kalori/Hari`, 'success');
+                renderRiwayat();
+            }
+        });
+
+        // Initial render
+        renderRiwayat();
+    </script>
+</body>
+</html>

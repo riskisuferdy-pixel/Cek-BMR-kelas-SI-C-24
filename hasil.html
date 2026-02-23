@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Hasil BMR - BMR Calculator</title>
+</head>
+<body>
+    <header>
+        <a href="#" class="logo"> BMR </a>
+        <nav>
+            <a href="index.html"> Home</a>
+            <a href="BMR.html">Cek BMR </a>
+            <a href="hasil.html" class="active">Hasil</a>
+        </nav>
+    </header>
+
+    <section>
+        <div class="results-container">
+            <h3>Hasil Perhitungan BMR SI C</h3>
+            <p class="form-description">Daftar semua hasil perhitungan BMR</p>
+            <div id="resultsGrid" class="results-grid"></div>
+        </div>
+    </section>
+
+    <script>
+        // Load hasil dari localStorage
+        let hasil = JSON.parse(localStorage.getItem('hasil')) || {};
+
+        // Render riwayat
+        function renderRiwayat() {
+            const grid = document.getElementById('resultsGrid');
+            const hasilArray = Object.values(hasil).sort((a, b) => b.timestamp - a.timestamp);
+            if (hasilArray.length === 0) {
+                grid.innerHTML = "<div class='message error'>Belum ada hasil perhitungan. Silakan ke halaman Cek BMR untuk menghitung BMR.</div>";
+                return;
+            }
+            grid.innerHTML = hasilArray.map(data => {
+                const bmr = data.hasil;
+                let kategori, warna;
+                if (bmr < 1400) {
+                    kategori = "Rendah";
+                    warna = "#ff6b6b";
+                } else if (bmr < 1700) {
+                    kategori = "Normal Bawah";
+                    warna = "#ffd93d";
+                } else if (bmr < 2200) {
+                    kategori = "Normal";
+                    warna = "#51cf66";
+                } else {
+                    kategori = "Tinggi";
+                    warna = "#b74b4b";
+                }
+                return `
+                    <div class='result-card'>
+                        <div class='result-header' style='border-left: 5px solid ${warna}'>
+                            <h4>${data.nama}</h4>
+                            <p class='nim-label'>${data.nim}</p>
+                        </div>
+                        <div class='result-body'>
+                            <div class='result-value-large'>${bmr.toFixed(2)}</div>
+                            <p class='result-unit'>Kalori/Hari</p>
+                            <p class='result-category' style='color: ${warna}'>${kategori}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+
+        // Initial render
+        renderRiwayat();
+    </script>
+</body>
+</html>
